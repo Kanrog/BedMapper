@@ -19,8 +19,10 @@ Not all 3D printer firmware or OEM interfaces provide a visual representation of
 
 1. Run a bed mesh probe on your 3D printer.
 2. Copy the raw probe output from your terminal or console. The text should look similar to:
+   ```text
    // probe at 10.000,10.000 is z=-0.048281
    // probe at 10.000,10.000 is z=-0.046875
+   ```
 3. Navigate to https://kanrog.com/BedMapper.
 4. Paste the console output into the text area.
 5. Click "Render 3D Mesh".
