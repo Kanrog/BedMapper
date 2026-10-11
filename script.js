@@ -2,7 +2,10 @@ document.getElementById('renderBtn').addEventListener('click', parseAndRender);
 
 function parseAndRender() {
     const inputText = document.getElementById('consoleInput').value;
-    const regex = /probe at\s+([\d\.]+),\s*([\d\.]+)\s+is z=([-\d\.]+)/gi;
+    
+    // Updated regex: ignores timestamps, handles varying whitespace, and allows negative X/Y
+    const regex = /probe at\s+([0-9.-]+),\s*([0-9.-]+)\s+is\s+z=([0-9.-]+)/gi;
+    
     let match;
     const dataMap = new Map();
 
