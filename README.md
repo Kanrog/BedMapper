@@ -15,6 +15,14 @@ Not all 3D printer firmware or OEM interfaces provide a visual representation of
 * Automatic Averaging: If multiple probe samples are taken at the same coordinate, the tool automatically averages the Z-heights.
 * Variance Calculation: Automatically calculates and displays the total variance (difference between the highest and lowest points) of your bed.
 
+## How it Works
+
+BedMapper uses regular expressions to scan your pasted text for lines containing X, Y, and Z coordinate data. It extracts these numbers, automatically rounds the X and Y coordinates to snap them to a clean grid (fixing slight variations in Klipper probe positions), and averages any duplicate probe points. Finally, it uses the Plotly.js library to render this unified matrix into an interactive 3D surface.
+
+## Security
+
+All processing is performed locally on your device. BedMapper is a completely static web application. No data, console output, or telemetry is ever transmitted to a server, saved to a database, or stored externally. 
+
 ## How to Use
 
 1. Run a bed mesh probe on your 3D printer.
@@ -34,4 +42,3 @@ This project is designed to be hosted statically. Simply serve the index.html, s
 ## License
 
 Copyright (c) 2026 Kanrog Creations.
-

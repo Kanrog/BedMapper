@@ -10,8 +10,9 @@ function parseAndRender() {
     const dataMap = new Map();
 
     while ((match = regex.exec(inputText)) !== null) {
-        const x = parseFloat(match[1]);
-        const y = parseFloat(match[2]);
+        // Round X and Y to the nearest whole number to fix grid fragmentation
+        const x = Math.round(parseFloat(match[1]));
+        const y = Math.round(parseFloat(match[2]));
         const z = parseFloat(match[3]);
         const key = `${x},${y}`;
 
