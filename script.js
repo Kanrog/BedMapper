@@ -1,18 +1,31 @@
 document.getElementById('renderBtn').addEventListener('click', parseAndRender);
 
+// Update slider value display and trigger re-render on change
+const zScaleInput = document.getElementById('zScale');
+const zScaleValue = document.getElementById('zScaleValue');
+
+zScaleInput.addEventListener('input', function(e) {
+    zScaleValue.innerText = e.target.value + 'x';
+});
+
+zScaleInput.addEventListener('change', function() {
+    // Only re-render if a plot already exists
+    if (document.getElementById('plotContainer').innerHTML !== "") {
+        parseAndRender();
+    }
+});
+
 function parseAndRender() {
+    // Purge completely clears the WebGL context, fixing the double-render freeze
+    Plotly.purge('plotContainer');
+
     const inputText = document.getElementById('consoleInput').value;
-    
     const regex = /probe at\s+([0-9.-]+),\s*([0-9.-]+)\s+is\s+z=([0-9.-]+)/gi;
     
     let match;
     const dataMap = new Map();
-    let matchCount = 0;
-
-    console.log("--- Starting Parsing Process ---");
 
     while ((match = regex.exec(inputText)) !== null) {
-        matchCount++;
         const x = Math.round(parseFloat(match[1]));
         const y = Math.round(parseFloat(match[2]));
         const z = parseFloat(match[3]);
@@ -24,11 +37,8 @@ function parseAndRender() {
         dataMap.get(key).push(z);
     }
 
-    console.log(`Total Regex Matches Found: ${matchCount}`);
-    console.log("Data Map (Grouped by rounded X,Y):", dataMap);
-
     if (dataMap.size === 0) {
-        alert("No valid probe data found.");
+        alert("No valid probe data found. Ensure your text includes lines like: // probe at 10.000,10.000 is z=-0.048");
         return;
     }
 
@@ -47,9 +57,6 @@ function parseAndRender() {
     const xVals = Array.from(uniqueX).sort((a, b) => a - b);
     const yVals = Array.from(uniqueY).sort((a, b) => a - b);
 
-    console.log("Sorted X Axis Coordinates:", xVals);
-    console.log("Sorted Y Axis Coordinates:", yVals);
-
     const zMatrix = [];
     let minZ = Infinity;
     let maxZ = -Infinity;
@@ -58,7 +65,6 @@ function parseAndRender() {
         const row = [];
         for (let j = 0; j < xVals.length; j++) {
             const point = averagedData.find(p => p.x === xVals[j] && p.y === yVals[i]);
-            // Note: If a point is missing in the grid, it pushes 'null'. Plotly surface plots fail if they hit nulls.
             const zVal = point ? point.z : null;
             row.push(zVal);
             
@@ -70,8 +76,6 @@ function parseAndRender() {
         zMatrix.push(row);
     }
 
-    console.log("Final Z Matrix generated for Plotly:", zMatrix);
-
     const plotData = [{
         z: zMatrix,
         x: xVals,
@@ -80,8 +84,19 @@ function parseAndRender() {
         colorscale: 'Jet',
         colorbar: {
             title: 'Z Height (mm)'
+        },
+        // Adds the visible wireframe grid directly onto the mesh surface
+        contours: {
+            x: { show: true, color: '#11111b', width: 2 },
+            y: { show: true, color: '#11111b', width: 2 }
         }
     }];
+
+    // Calculate dynamic aspect ratio to preserve physical bed proportions
+    const xRange = Math.max(...xVals) - Math.min(...xVals) || 1;
+    const yRange = Math.max(...yVals) - Math.min(...yVals) || 1;
+    const maxRange = Math.max(xRange, yRange);
+    const scaleFactor = parseFloat(zScaleInput.value) || 0.5;
 
     const layout = {
         title: {
@@ -93,6 +108,12 @@ function parseAndRender() {
         autosize: true,
         margin: { l: 65, r: 50, b: 65, t: 90 },
         scene: {
+            aspectmode: 'manual',
+            aspectratio: { 
+                x: xRange / maxRange, 
+                y: yRange / maxRange, 
+                z: scaleFactor 
+            },
             xaxis: { title: 'X Axis', color: '#cdd6f4', gridcolor: '#45475a' },
             yaxis: { title: 'Y Axis', color: '#cdd6f4', gridcolor: '#45475a' },
             zaxis: { title: 'Z Axis', color: '#cdd6f4', gridcolor: '#45475a' },
@@ -102,10 +123,5 @@ function parseAndRender() {
         }
     };
 
-    try {
-        Plotly.newPlot('plotContainer', plotData, layout, {responsive: true});
-        console.log("Plotly render triggered successfully.");
-    } catch (error) {
-        console.error("Plotly rendering failed:", error);
-    }
+    Plotly.newPlot('plotContainer', plotData, layout, {responsive: true});
 }

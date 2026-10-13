@@ -54,6 +54,30 @@ textarea:focus {
     border-color: #89b4fa;
 }
 
+.controls {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    color: #a6adc8;
+    font-size: 14px;
+    background-color: #181825;
+    padding: 10px 15px;
+    border: 1px solid #313244;
+    border-radius: 8px;
+}
+
+.controls input[type="range"] {
+    flex-grow: 1;
+    max-width: 300px;
+    accent-color: #89b4fa;
+}
+
+#zScaleValue {
+    font-weight: bold;
+    color: #89b4fa;
+    min-width: 40px;
+}
+
 button {
     align-self: flex-start;
     padding: 10px 20px;
