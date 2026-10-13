@@ -3,14 +3,16 @@ document.getElementById('renderBtn').addEventListener('click', parseAndRender);
 function parseAndRender() {
     const inputText = document.getElementById('consoleInput').value;
     
-    // Updated regex: ignores timestamps, handles varying whitespace, and allows negative X/Y
     const regex = /probe at\s+([0-9.-]+),\s*([0-9.-]+)\s+is\s+z=([0-9.-]+)/gi;
     
     let match;
     const dataMap = new Map();
+    let matchCount = 0;
+
+    console.log("--- Starting Parsing Process ---");
 
     while ((match = regex.exec(inputText)) !== null) {
-        // Round X and Y to the nearest whole number to fix grid fragmentation
+        matchCount++;
         const x = Math.round(parseFloat(match[1]));
         const y = Math.round(parseFloat(match[2]));
         const z = parseFloat(match[3]);
@@ -22,8 +24,11 @@ function parseAndRender() {
         dataMap.get(key).push(z);
     }
 
+    console.log(`Total Regex Matches Found: ${matchCount}`);
+    console.log("Data Map (Grouped by rounded X,Y):", dataMap);
+
     if (dataMap.size === 0) {
-        alert("No valid probe data found. Ensure your text includes lines like: // probe at 10.000,10.000 is z=-0.048");
+        alert("No valid probe data found.");
         return;
     }
 
@@ -42,6 +47,9 @@ function parseAndRender() {
     const xVals = Array.from(uniqueX).sort((a, b) => a - b);
     const yVals = Array.from(uniqueY).sort((a, b) => a - b);
 
+    console.log("Sorted X Axis Coordinates:", xVals);
+    console.log("Sorted Y Axis Coordinates:", yVals);
+
     const zMatrix = [];
     let minZ = Infinity;
     let maxZ = -Infinity;
@@ -50,6 +58,7 @@ function parseAndRender() {
         const row = [];
         for (let j = 0; j < xVals.length; j++) {
             const point = averagedData.find(p => p.x === xVals[j] && p.y === yVals[i]);
+            // Note: If a point is missing in the grid, it pushes 'null'. Plotly surface plots fail if they hit nulls.
             const zVal = point ? point.z : null;
             row.push(zVal);
             
@@ -60,6 +69,8 @@ function parseAndRender() {
         }
         zMatrix.push(row);
     }
+
+    console.log("Final Z Matrix generated for Plotly:", zMatrix);
 
     const plotData = [{
         z: zMatrix,
@@ -91,5 +102,10 @@ function parseAndRender() {
         }
     };
 
-    Plotly.newPlot('plotContainer', plotData, layout, {responsive: true});
+    try {
+        Plotly.newPlot('plotContainer', plotData, layout, {responsive: true});
+        console.log("Plotly render triggered successfully.");
+    } catch (error) {
+        console.error("Plotly rendering failed:", error);
+    }
 }
