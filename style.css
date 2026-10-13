@@ -28,6 +28,23 @@ header h1 {
 
 header p {
     color: #a6adc8;
+    margin-bottom: 10px;
+}
+
+.github-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #89b4fa;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: bold;
+    transition: color 0.2s;
+}
+
+.github-link:hover {
+    color: #74c7ec;
+    text-decoration: underline;
 }
 
 .input-section {
